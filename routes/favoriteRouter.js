@@ -26,7 +26,7 @@ favoriteRouter.route('/')
     Favorites.findById({user: req.user._id})
     .then((favorite) => {
         if(favorite == null) {
-            Favorites.create({user: req.user._id})
+            Favorites.create(req.user._id)
             .populate('user')
             .populate('dishes')
             .then((favorite) => {
@@ -40,13 +40,8 @@ favoriteRouter.route('/')
             }, (err) => next(err));
         }
         else {
-            for(var i in req,body) {
-                Favorites.findById(favorite._id)                 
-                .then((favorite) => {
-                    if(favorite == null) {
-                        favorite.dishes.push(req.body[i]);
-                    }
-                });
+            for(var i in req.body) {
+                favorite.dishes.push(req.body[i]);
             }
             favorite.save();
             res.statusCode = 200;
@@ -60,7 +55,7 @@ favoriteRouter.route('/')
     res.end('PUT operation not supported on /favorites');
 })
 .delete(cors.corsWithOPtions, authenticate.verifyUser, (req, res, next) => {
-    Favorites.deleteOne({user: req.user._id})
+    Favorites.findByIdAndDelete({user: req.user._id})
     .then((resp) => {
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
