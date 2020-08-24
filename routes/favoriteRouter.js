@@ -55,7 +55,7 @@ favoriteRouter.route('/')
     res.end('PUT operation not supported on /favorites');
 })
 .delete(cors.corsWithOPtions, authenticate.verifyUser, (req, res, next) => {
-    Favorites.findByIdAndDelete({user: req.user._id})
+    Favorites.remove({user: req.user._id})
     .then((resp) => {
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
@@ -71,8 +71,8 @@ favoriteRouter.route('/:dishId')
     .populate('user')
     .populate('dishes')
     .then((favorites) => {
-        if(!(favorites.user.equals(req.user._id))) {
-            var err = new Error('Only creator can perform this');
+        if(!(favorites.user._id.equals(req.user._id))) {
+            var err = new Error(`You are not authorized`);
             err.status = 401;
             return next(err);
         }
@@ -83,16 +83,49 @@ favoriteRouter.route('/:dishId')
     .catch((err) => next(err)); 
 })
 .post(cors.cors, authenticate.verifyUser, (req, res, next) => {
-     Favorites.findById({user: req.user._id})
+     Favorites.findById(req.params.dishId)
      .populate('user')
      .populate('dishes')
      .then((dish) => {
-           
-     })
+         if(dish!=null && dish.user.id(req.params.dishId) && req.user._id.equals(dish.user.id(req.params.dishId).user)) {
+            dish.dishes.push(req.body); 
+         }  
+         else {
+            var err = new Error(`No Such Dish`);
+            err.status = 401;
+            return next(err);
+         }
+     }, (err) => next(err))
+     .catch((err) => next(err)); 
 })
 .put(cors.cors, authenticate.verifyUser, (req, res, next) => {
-
+    res.statusCode = 403;
+    res.end('PUT operation not supported on /favorites');
 })
 .delete(cors.cors, authenticate.verifyUser, (req, res, next) => {
-
+    Favorites.findById({user: req.user._id})
+    .populate('user')
+    .populate('dishes')    
+    .then((dish) => {
+        if(dish != null && dish.user.id(req.params.dishId) != null && req.user._id.equals(dish.user.id(req.params.dishId).user)) {
+            dish.user.id(req.params.dishId).remove(); 
+            dish.save()
+                .then((dish) => {
+                    Dishes.findById(dish._id)
+                    .populate('user')
+                    .populate('dishes')
+                    .then((dish) => {
+                        res.statusCode = 200;
+                        res.setHeader('Content-Type', 'application/json');
+                        res.json(dish);  
+                    })               
+                }, (err) => next(err));
+        }
+        else {
+            var err = new Error('Not Authorized');
+            err.status = 401;
+            return next(err);
+        }   
+    }, (err) => next(err))
+    .catch((err) => next(err));
 });
