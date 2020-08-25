@@ -13,6 +13,7 @@ var config = require('./config');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');                                                                                                                                                                                                                                                                                                                                                            
 var dishRouter = require('./routes/dishRouter');
+var commentRouter = require('./routes/commentRouter');
 var promoRouter = require('./routes/promoRouter');
 var leaderRouter = require('./routes/leaderRouter');
 var uploadRouter = require('./routes/uploadRouter');
@@ -21,6 +22,7 @@ var favoriteRouter = require('./routes/favoriteRouter');
 const mongoose = require('mongoose');
 
 const Dishes = require('./models/dishes');
+const Comments = require('./models/comments');
 const Leaders = require('./models/leaders');
 const Promotions = require('./models/promotions');
 const Favorites = require('./models/favorites');
@@ -65,6 +67,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 
 app.use('/dishes', dishRouter);
+app.use('/comments', commentRouter);
 app.use('/promotions', promoRouter);
 app.use('/leaders', leaderRouter);
 app.use('/imageUpload', uploadRouter);
