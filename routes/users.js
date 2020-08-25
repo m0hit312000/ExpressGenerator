@@ -9,6 +9,7 @@ var router = express.Router();
 router.use(bodyParser.json());
 
 /* GET users listing. */
+router.options('*', cors.corsWithOPtions, (req, res) => { res.sendStatus(200);})
 router.get('/', cors.corsWithOPtions, authenticate.verifyUser, authenticate.verifyAdmin, function(req, res, next) {
   User.find({})
   .then((user) => {
